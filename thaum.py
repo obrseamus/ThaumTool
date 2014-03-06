@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import pprint
+import sys
 import subprocess as sp
 import itertools 
 from clint.textui import colored
@@ -14,27 +15,31 @@ def addDepth( depth):
 #    pp.pprint(aspectDepth2neighbors)
 
 def printStep(depth):
-	output = '\n'
-	for chosen in sorted(aspect2chosen.keys()):
-		if aspect2chosen[chosen]:
-			output += colored.green(chosen.ljust(17))
-	print (output)
-	for aspect in sorted(aspect2parents.keys()):
-		row = ""
-		found = 0
-		for chosen in sorted(aspect2chosen.keys()):
-			#print(aspect +":"+ chosen)
-			if aspect2chosen[chosen]:
-				if aspect in aspectDepth2neighbors[chosen][depth]:
-					row+= ("  "+aspect).ljust(17)
-					found+=1
-				else:
-					row+= " "*17
-		if found > 1:
-			print(colored.yellow(row))
-		elif found:
-			print(row)
-		
+  totalChosen = 0
+  output = '\n'
+  for chosen in sorted(aspect2chosen.keys()):
+    if aspect2chosen[chosen]:
+      output += colored.green(chosen.ljust(17))
+      totalChosen += 1
+  print (output)
+  for aspect in sorted(aspect2parents.keys()):
+    row = ""
+    found = 0
+    for chosen in sorted(aspect2chosen.keys()):
+      #print(aspect +":"+ chosen)
+      if aspect2chosen[chosen]:
+        if aspect in aspectDepth2neighbors[chosen][depth]:
+          row+= ("  "+aspect).ljust(17)
+          found+=1
+        else:
+          row+= " "*17
+    if found == totalChosen:
+      print(colored.red(row))
+    elif found > 1:
+      print(colored.yellow(row))
+    elif found ==1 :
+      print(row)
+    
 aspect2parents  = {
     'Aer' : []
     , 'Alienis' : ['Vacuos','Tenebrae']
@@ -131,39 +136,46 @@ output = '';
 choice = True;
 looping = True;
 while looping:
-	while choice:
-		sp.call('cls',shell=True)
+  while choice:
+    sp.call('cls',shell=True)
 
-		for i,aspect in enumerate(sorted(aspectDepth2neighbors.keys())):
-			if aspect2chosen[aspect]:
-				output += colored.green(("%s. %s" %( i, aspect)).ljust(17))
-			else:
-				output +=("%s. %s" %( i, aspect)).ljust(17)
-			if i%columnNum == columnNum -1:
-				print (output)
-				output = ''
-			if i%(columnNum*3) == columnNum -1:
-				output= "\n"
-	
-		print (output)
-		output = ''
-		choice = input('Which aspects?')
-		if not choice:
-			continue
-		choice = eval(choice)
-		if choice > 50:
-			continue
-		
-		print (sorted(aspectDepth2neighbors.keys())[choice])
-		aspect2chosen[sorted(aspectDepth2neighbors.keys())[choice]] = not aspect2chosen[sorted(aspectDepth2neighbors.keys())[choice]]
-		print ("")
-	printStep(1)
-	printStep(2)
-	printStep(3)
-	choice = input('Press a key to choose again.')
-	choice = True
+    for i,aspect in enumerate(sorted(aspectDepth2neighbors.keys())):
+      if aspect2chosen[aspect]:
+        output += colored.green(("%s. %s" %( i, aspect)).ljust(17))
+      else:
+        output +=("%s. %s" %( i, aspect)).ljust(17)
+      if i%columnNum == columnNum -1:
+        print (output)
+        output = ''
+      if i%(columnNum*3) == columnNum -1:
+        output= "\n"
+  
+    print (output)
+    output = ''
+    choice = input('Which aspects? c)lear, x)it\n')
 
-		
-	
+    if choice == "c":
+      aspect2chosen.update({aspect: False for aspect in aspect2chosen})
+      continue
+    if choice == "x":
+      sys.exit(0)
+    try:
+      choice = eval(choice)
+    except:
+      continue
+    if choice > 50:
+      continue
+    
+    print (sorted(aspectDepth2neighbors.keys())[choice])
+    aspect2chosen[sorted(aspectDepth2neighbors.keys())[choice]] = not aspect2chosen[sorted(aspectDepth2neighbors.keys())[choice]]
+    print ("")
+  printStep(1)
+  printStep(2)
+  printStep(3)
+  choice = input('Press a key to choose again.')
+  choice = True
+
+    
+  
 
 
